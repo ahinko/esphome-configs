@@ -1,0 +1,53 @@
+---
+substitutions:
+  name: ble-proxy-2
+
+esphome:
+  name: ${name}
+  name_add_mac_suffix: true
+  project:
+    name: esphome.bluetooth-proxy
+    version: "1.0"
+
+# https://esphome.io/components/wifi.html
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  fast_connect: true
+
+  # Optional manual IP
+  manual_ip:
+    static_ip: 192.168.71.107
+    gateway: 192.168.71.1
+    subnet: 255.255.255.0
+
+  ap:
+    ssid: "$name Hotspot"
+    password: !secret wifi_fallback_ssid_password
+
+esp32:
+  board: esp32dev
+  framework:
+    type: esp-idf
+
+logger:
+api:
+ota:
+  password: !secret ota_password
+
+dashboard_import:
+  package_import_url: github://esphome/bluetooth-proxies/esp32-generic.yaml@main
+
+esp32_ble_tracker:
+  scan_parameters:
+    interval: 1100ms
+    window: 1100ms
+    active: true
+
+bluetooth_proxy:
+  active: true
+
+# Example configuration entry
+switch:
+  - platform: restart
+    name: "BLE proxy 2 restart"
