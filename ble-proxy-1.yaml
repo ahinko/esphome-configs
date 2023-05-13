@@ -46,3 +46,8 @@ esp32_ble_tracker:
 
 bluetooth_proxy:
   active: true
+
+# Example configuration entry
+switch:
+  - platform: restart
+    name: "BLE proxy 1 restart"
