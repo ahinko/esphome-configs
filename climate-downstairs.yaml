@@ -1,6 +1,6 @@
 ---
 substitutions:
-  name: climate-downstairs
+  name: climate_downstairs
   friendly_name: Luftvärmepump
 
 esphome:
