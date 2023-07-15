@@ -9,6 +9,10 @@ esphome:
     name: esphome.bluetooth-proxy
     version: "1.0"
 
+api:
+  encryption:
+    key: !secret api-key-ble-proxy-1
+
 # https://esphome.io/components/wifi.html
 wifi:
   ssid: !secret wifi_ssid
@@ -31,7 +35,6 @@ esp32:
     type: esp-idf
 
 logger:
-api:
 ota:
   password: !secret ota_password
 

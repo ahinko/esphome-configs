@@ -9,6 +9,10 @@ esphome:
     name: esphome.bluetooth-proxy
     version: "1.0"
 
+api:
+  encryption:
+    key: !secret api-key-ble-proxy-2
+
 # https://esphome.io/components/wifi.html
 wifi:
   ssid: !secret wifi_ssid
