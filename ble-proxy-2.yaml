@@ -35,9 +35,9 @@ esp32:
     type: esp-idf
 
 logger:
-api:
 ota:
   password: !secret ota_password
+  platform: esphome
 
 dashboard_import:
   package_import_url: github://esphome/bluetooth-proxies/esp32-generic.yaml@main

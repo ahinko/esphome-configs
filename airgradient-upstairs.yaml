@@ -29,6 +29,7 @@ logger:
 api:
 ota:
   password: !secret ota_password
+  platform: esphome
 captive_portal:
 
 # Configuration for AirGradient DIY v2 device
