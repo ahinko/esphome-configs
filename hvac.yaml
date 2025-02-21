@@ -1,0 +1,168 @@
+---
+substitutions:
+  name: mitsubishi-hero-heatpump
+  friendly_name: Mitsubishi Hero
+  remote_temp_sensor: sensor.average_temperature_downstairs
+
+esphome:
+  name: ${name}
+
+api:
+  encryption:
+    key: !secret api-key-mitsubishi-hero-heatpump
+
+# https://esphome.io/components/wifi.html
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  fast_connect: true
+
+  # Optional manual IP
+  manual_ip:
+    static_ip: 192.168.71.218
+    gateway: 192.168.71.1
+    subnet: 255.255.255.0
+
+  ap:
+    ssid: "$name Hotspot"
+    password: !secret wifi_fallback_ssid_password
+
+ota:
+  password: !secret ota_password
+  platform: esphome
+
+captive_portal:
+
+esp32:
+  board: esp32dev
+  framework:
+    type: esp-idf
+
+uart:
+  id: HP_UART
+  baud_rate: 2400
+  tx_pin: GPIO17
+  rx_pin: GPIO16
+
+time:
+  - platform: homeassistant
+    id: homeassistant_time
+
+# Create a button to restart the unit from HomeAssistant. Rarely needed, but can be handy.
+button:
+  - platform: restart
+    name: "Restart ${friendly_name}"
+
+# Text sensors with general information.
+text_sensor:
+  # Expose ESPHome version as sensor.
+  - platform: version
+    name: ${friendly_name} ESPHome Version
+  # Expose WiFi information as sensors.
+  - platform: wifi_info
+    ip_address:
+      name: ${friendly_name} IP
+    ssid:
+      name: ${friendly_name} SSID
+    bssid:
+      name: ${friendly_name} BSSID
+
+# Sensors with general information.
+sensor:
+  # Uptime sensor.
+  - platform: uptime
+    name: ${friendly_name} Uptime
+
+  # WiFi Signal sensor.
+  - platform: wifi_signal
+    name: ${friendly_name} WiFi Signal
+    update_interval: 60s
+
+  - platform: homeassistant
+    name: "Remote Temperature Sensor"
+    entity_id: ${remote_temp_sensor}
+    internal: false
+    disabled_by_default: true
+    device_class: temperature
+    state_class: measurement
+    unit_of_measurement: "°C"
+    filters:
+    # Uncomment the lambda line to convert F to C on incoming temperature
+    #  - lambda: return (x - 32) * (5.0/9.0);
+      - clamp: # Limits values to range accepted by Mitsubishi units
+          min_value: 1
+          max_value: 40
+          ignore_out_of_range: true
+      - throttle: 30s
+    on_value:
+      then:
+        - logger.log:
+            level: INFO
+            format: "Remote temperature received from HA: %.1f C"
+            args: [ 'x' ]
+        - lambda: 'id(mitsubishi_hero_heatpump).set_remote_temperature(x);'
+
+# External component reference
+external_components:
+  - source: github://echavet/MitsubishiCN105ESPHome
+
+# Climate entity configuration
+climate:
+  - platform: cn105
+    id: mitsubishi_hero_heatpump
+    name: "${friendly_name}"
+    icon: mdi:heat-pump
+    visual:
+      min_temperature: 15
+      max_temperature: 31
+      temperature_step:
+        target_temperature: 1
+        current_temperature: 0.5
+    # Timeout and communication settings
+    remote_temperature_timeout: 30min
+    update_interval: 4s
+    debounce_delay : 100ms      # update interval can be adjusted after a first run and logs monitoring 
+    compressor_frequency_sensor:
+      name: Compressor Frequency
+      entity_category: diagnostic
+      disabled_by_default: true
+    outside_air_temperature_sensor:
+      name: Outside Air Temp
+      disabled_by_default: true
+    vertical_vane_select:
+      name: Vertical Vane
+      disabled_by_default: false
+    horizontal_vane_select:
+      name: Horizontal Vane
+      disabled_by_default: true
+    isee_sensor:
+      name: ISEE Sensor
+      disabled_by_default: true
+    stage_sensor:
+      name: Stage
+      entity_category: diagnostic
+      disabled_by_default: true
+    sub_mode_sensor:
+      name: Sub Mode
+      entity_category: diagnostic
+      disabled_by_default: true
+    auto_sub_mode_sensor:
+      name: Auto Sub Mode
+      entity_category: diagnostic
+      disabled_by_default: true
+    input_power_sensor:
+      name: Input Power
+      disabled_by_default: true
+    kwh_sensor:
+      name: Energy Usage
+      disabled_by_default: true
+    runtime_hours_sensor:
+      name: Runtime Hours
+      entity_category: diagnostic
+      disabled_by_default: true
+
+
+# Default logging level
+logger:
+#  hardware_uart: UART1 # Uncomment on ESP8266 devices
+  level: INFO
