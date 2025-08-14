@@ -253,7 +253,7 @@ display:
     pages:
       - id: page1
         lambda: |-
-          if (id(homeassistant_time).now().hour > 18 || id(homeassistant_time).now().hour < 9)
+          if (id(homeassistant_time).now().hour > 19 || id(homeassistant_time).now().hour < 9)
           {
             it.print(0, 0, id(roboto), ".");
           }
